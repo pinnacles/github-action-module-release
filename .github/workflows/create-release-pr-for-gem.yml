@@ -1,0 +1,60 @@
+on:
+  workflow_call:
+    inputs:
+      base-branch:
+        required: true
+        type: string
+      version-file-path:
+        required: true
+        type: string
+      version-module-name:
+        required: true
+        type: string
+      commit-user-email:
+        type: string
+        default: "41898282+github-actions[bot]@users.noreply.github.com"
+      commit-user-name:
+        type: string
+        default: "github-actions[bot]"
+    secrets:
+      github-token:
+        required: true
+jobs:
+  create_pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: ${{ inputs.base-branch }}
+      - name: Conventional Changelog Action
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v5
+        with:
+          preset: conventionalcommits
+          skip-version-file: true
+          output-file: false
+          git-branch: ${{ inputs.base-branch }}
+          git-push: false
+          skip-commit: true
+          skip-tag: true
+          github-token: ${{ secrets.github-token }}
+      - name: Commit version up commit
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        env:
+          VERSION: ${{ steps.changelog.outputs.version }}
+        run: |
+          git config --local user.email "${{ inputs.commit-user-email }}" 
+          git config --local user.name "${{ inputs.commit-user-name }}"
+          git checkout -b release/v$VERSION 
+          printf "# frozen_string_literal: true\n\nmodule ${{ inputs.version-module-name }}\n  VERSION = '$VERSION'\nend\n" > ${{ inputs.version-file-path }}
+          git add ${{ inputs.version-file-path }}
+          git commit -m "chore: bump version to v$VERSION"
+          git push origin release/v$VERSION
+      - name: Create Pull Request
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.github-token }}
+        run: |
+          gh pr create --title "chore: Release version to v${{ steps.changelog.outputs.version }}" --body "${{ steps.changelog.outputs.clean_changelog }}" --base ${{ inputs.base-branch }} --head release/v${{ steps.changelog.outputs.version }}
