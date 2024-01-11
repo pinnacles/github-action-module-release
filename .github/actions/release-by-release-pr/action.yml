@@ -9,11 +9,11 @@ runs:
   steps:
     - name: validate event type
       run: | 
-        if [[${{ github.event.pull_request.merged && startsWith(github.head_ref, 'release/') }}]]; then 
+        if ${{ github.event.pull_request.merged && startsWith(github.head_ref, 'release/') }}; then
           :
-        else 
+        else
           echo "This action is only available in the merge event of a Release PullRequest.";
-          exit 1; 
+          exit 1;
         fi
       shell: bash
     - name: Checkout repository
