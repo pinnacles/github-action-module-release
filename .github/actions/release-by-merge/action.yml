@@ -1,0 +1,29 @@
+name: Release by merge
+description: Create a release when a PR is merged into the release branch
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: Conventional Changelog Action
+      id: changelog
+      uses: TriPSs/conventional-changelog-action@v5
+      with:
+        preset: conventionalcommits
+        skip-version-file: true
+        output-file: false
+        skip-commit: true
+        github-token: ${{ env.GITHUB_TOKEN }}
+
+    - name: Create Release
+      uses: actions/create-release@v1
+      if: ${{ steps.changelog.outputs.skipped == 'false' }}
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.changelog.outputs.tag }}
+        release_name: ${{ steps.changelog.outputs.tag }}
+        body: ${{ steps.changelog.outputs.clean_changelog }}

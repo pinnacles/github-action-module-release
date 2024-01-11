@@ -84,7 +84,7 @@ on:
 
 jobs:
   create_pr:
-    uses: pinnacles/github-action-module-release/.github/workflows/create-release-pr-for-gem.yml@v1.0.0
+    uses: pinnacles/github-action-module-release/.github/workflows/action.yml@v1.0.0
     with:
       base-branch: master
       version-file-path: ./lib/my_gem/version.rb
