@@ -9,7 +9,7 @@ runs:
   steps:
     - name: validate event type
       run: | 
-        if [[${{ github.event.pull_request.merged && startsWith(github.head_ref, 'release/') }} = "true"]]; then 
+        if [[${{ github.event.pull_request.merged && startsWith(github.head_ref, 'release/') }}]]; then 
           :
         else 
           echo "This action is only available in the merge event of a Release PullRequest.";
