@@ -25,6 +25,7 @@ runs:
       with:
         fetch-depth: 2
         ref: ${{ inputs.base-branch }}
+        token: ${{ env.GITHUB_TOKEN }}
     - name: Conventional Changelog Action
       id: changelog
       uses: TriPSs/conventional-changelog-action@v5
@@ -36,8 +37,8 @@ runs:
         git-push: false
         skip-commit: true
         skip-tag: true
-        tab-prefix: ${{ inputs.tag-prefix }}
-        github-token: ${{ env.GITHUB_TOKEN  }}
+        tag-prefix: ${{ inputs.tag-prefix }}
+        github-token: ${{ env.GITHUB_TOKEN }}
     - name: Commit version up commit
       if: ${{ steps.changelog.outputs.skipped == 'false' }}
       env:
@@ -45,7 +46,7 @@ runs:
       run: |
         git config --local user.email "${{ inputs.commit-user-email }}" 
         git config --local user.name "${{ inputs.commit-user-name }}"
-        git checkout -b release/v$VERSION 
+        git checkout -b release/${{ inputs.tag-prefix }}$VERSION 
         VERSION_FILE_RAW=$(awk '{gsub(/VERSION = '\''[^'\'']+'\''/, "VERSION = '\'$VERSION\''"); print}' ${{ inputs.version-file-path }})
         echo "$VERSION_FILE_RAW" > ${{ inputs.version-file-path }}
         git add ${{ inputs.version-file-path }}
