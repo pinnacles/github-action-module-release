@@ -25,6 +25,7 @@ runs:
       with:
         fetch-depth: 2
         ref: ${{ inputs.base-branch }}
+        token: ${{ env.GITHUB_TOKEN }}
     - name: Conventional Changelog Action
       id: changelog
       uses: TriPSs/conventional-changelog-action@v5
@@ -37,7 +38,7 @@ runs:
         skip-commit: true
         skip-tag: true
         tag-prefix: ${{ inputs.tag-prefix }}
-        github-token: ${{ env.GITHUB_TOKEN  }}
+        github-token: ${{ env.GITHUB_TOKEN }}
     - name: Commit version up commit
       if: ${{ steps.changelog.outputs.skipped == 'false' }}
       env:
