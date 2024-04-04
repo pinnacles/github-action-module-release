@@ -36,7 +36,7 @@ runs:
         git-push: false
         skip-commit: true
         skip-tag: true
-        tab-prefix: ${{ inputs.tag-prefix }}
+        tag-prefix: ${{ inputs.tag-prefix }}
         github-token: ${{ env.GITHUB_TOKEN  }}
     - name: Commit version up commit
       if: ${{ steps.changelog.outputs.skipped == 'false' }}
