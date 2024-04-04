@@ -26,7 +26,6 @@ gem リポジトリのリリース PR を作成する Action｡ gem は version 
 |---------------------|-------------------------------|---------------------------------------------------------|---------------------------|
 | base-branch         | リリース対象のブランチ名                  |                                                         | `main`                    |
 | version-file-path   | gem の version.rb のパス          |                                                         | `./lib/my_gem/version.rb` |
-| version-module-name | gem のモジュール名                   |                                                         | `My_gem`                  |
 | commit-user-email   | version.rb の変更コミットのユーザー Email | `41898282+github-actions[bot]@users.noreply.github.com` |                           |
 | commit-user-name    | version.rb の変更コミットのユーザー名      | `github-actions[bot]`                                   |                           |
 | tag-prefix | git tag のプレフィックス                | `v`                                                     | `ruby-gems`               |
@@ -91,7 +90,6 @@ jobs:
         with:
           base-branch: master
           version-file-path: ./lib/my_gem/version.rb
-          version-module-name: MyGem
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

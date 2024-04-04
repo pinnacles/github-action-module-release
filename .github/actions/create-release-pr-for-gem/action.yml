@@ -7,9 +7,6 @@ inputs:
   version-file-path:
     required: true
     description: The path to the version file. ex. ./lib/my_gem/version.rb
-  version-module-name:
-    required: true
-    description: Gem module name. ex. MyGem
   commit-user-email:
     description: The email address of the user who created the commit
     default: "41898282+github-actions[bot]@users.noreply.github.com"
@@ -49,7 +46,8 @@ runs:
         git config --local user.email "${{ inputs.commit-user-email }}" 
         git config --local user.name "${{ inputs.commit-user-name }}"
         git checkout -b release/v$VERSION 
-        printf "# frozen_string_literal: true\n\nmodule ${{ inputs.version-module-name }}\n  VERSION = '$VERSION'\nend\n" > ${{ inputs.version-file-path }}
+        VERSION_FILE_RAW=$(awk '{gsub(/VERSION = '\''[^'\'']+'\''/, "VERSION = '\'$VERSION\''"); print}' ${{ inputs.version-file-path }})
+        echo "$VERSION_FILE_RAW" > ${{ inputs.version-file-path }}
         git add ${{ inputs.version-file-path }}
         git commit -m "chore: bump version to v$VERSION"
         git push origin release/${{ inputs.tag-prefix }}$VERSION
