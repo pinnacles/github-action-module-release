@@ -16,6 +16,9 @@ inputs:
   commit-user-name:
     description: The name of the user who created the commit
     default: "github-actions[bot]"
+  tag-prefix:
+    description: The tag prefix
+    default: "v"
 
 runs:
   using: "composite"
@@ -36,6 +39,7 @@ runs:
         git-push: false
         skip-commit: true
         skip-tag: true
+        tab-prefix: ${{ inputs.tag-prefix }}
         github-token: ${{ env.GITHUB_TOKEN  }}
     - name: Commit version up commit
       if: ${{ steps.changelog.outputs.skipped == 'false' }}
@@ -48,12 +52,12 @@ runs:
         printf "# frozen_string_literal: true\n\nmodule ${{ inputs.version-module-name }}\n  VERSION = '$VERSION'\nend\n" > ${{ inputs.version-file-path }}
         git add ${{ inputs.version-file-path }}
         git commit -m "chore: bump version to v$VERSION"
-        git push origin release/v$VERSION
+        git push origin release/${{ inputs.tag-prefix }}$VERSION
       shell: bash
     - name: Create Pull Request
       if: ${{ steps.changelog.outputs.skipped == 'false' }}
       env:
         GH_TOKEN: ${{ env.GITHUB_TOKEN }}
       run: |
-        gh pr create --title "chore: Release version to v${{ steps.changelog.outputs.version }}" --body "${{ steps.changelog.outputs.clean_changelog }}" --base ${{ inputs.base-branch }} --head release/v${{ steps.changelog.outputs.version }}
+        gh pr create --title "chore: Release version to v${{ steps.changelog.outputs.version }}" --body "${{ steps.changelog.outputs.clean_changelog }}" --base ${{ inputs.base-branch }} --head release/${{ inputs.tag-prefix }}${{ steps.changelog.outputs.version }}
       shell: bash
