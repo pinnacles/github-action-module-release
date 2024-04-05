@@ -21,6 +21,7 @@ runs:
       with:
         fetch-depth: 2
         ref: ${{ inputs.base-branch }}
+        token: ${{ env.GITHUB_TOKEN }}
 
     - name: Parse version
       id: parse_version
