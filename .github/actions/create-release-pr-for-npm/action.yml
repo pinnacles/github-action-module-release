@@ -44,7 +44,7 @@ runs:
         git config --local user.email "${{ inputs.commit-user-email }}"
         git config --local user.name "${{ inputs.commit-user-name }}"
         git checkout -b release/${{ inputs.tag-prefix }}$VERSION
-        sed -i 's/"version": ".*"/"version": "$VERSION"/' package.json
+        sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
         git add package.json
         git commit -m "chore: bump version to v$VERSION"
         git push origin release/${{ inputs.tag-prefix }}$VERSION
