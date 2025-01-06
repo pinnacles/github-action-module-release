@@ -44,9 +44,9 @@ runs:
       env:
         VERSION: ${{ steps.changelog.outputs.version }}
       run: |
-        git config --local user.email "${{ inputs.commit-user-email }}" 
+        git config --local user.email "${{ inputs.commit-user-email }}"
         git config --local user.name "${{ inputs.commit-user-name }}"
-        git checkout -b release/${{ inputs.tag-prefix }}$VERSION 
+        git checkout -b release/${{ inputs.tag-prefix }}$VERSION
         VERSION_FILE_RAW=$(awk '{gsub(/VERSION = '\''[^'\'']+'\''/, "VERSION = '\'$VERSION\''"); print}' ${{ inputs.version-file-path }})
         echo "$VERSION_FILE_RAW" > ${{ inputs.version-file-path }}
         git add ${{ inputs.version-file-path }}
@@ -58,5 +58,9 @@ runs:
       env:
         GH_TOKEN: ${{ env.GITHUB_TOKEN }}
       run: |
+        CMD=$(cat <<EOF
         gh pr create --title "chore: Release version to v${{ steps.changelog.outputs.version }}" --body "${{ steps.changelog.outputs.clean_changelog }}" --base ${{ inputs.base-branch }} --head release/${{ inputs.tag-prefix }}${{ steps.changelog.outputs.version }}
+        EOF
+        )
+        eval $CMD
       shell: bash
