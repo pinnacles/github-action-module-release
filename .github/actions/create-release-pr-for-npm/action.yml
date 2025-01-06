@@ -54,7 +54,10 @@ runs:
       env:
         GH_TOKEN: ${{ env.GITHUB_TOKEN }}
       run: |
-        BODY=${{ steps.changelog.outputs.clean_changelog }}
+        BODY=$(cat <<EOF
+        ${{ steps.changelog.outputs.clean_changelog }}
+        EOF
+        )
         ESCAPED_BODY=$(echo $BODY | sed 's/"/\\"/g')
         gh pr create --title "chore: Release version to v${{ steps.changelog.outputs.version }}" --body "$ESCAPED_BODY" --base ${{ inputs.base-branch }} --head release/${{ inputs.tag-prefix }}${{ steps.changelog.outputs.version }}
       shell: bash
