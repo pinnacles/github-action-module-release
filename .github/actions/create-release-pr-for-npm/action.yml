@@ -4,6 +4,9 @@ inputs:
   base-branch:
     required: true
     description: The base branch
+  version-file-path:
+    description: The path to the version file. ex. lib/my_npm/package.json
+    default: "package.json"
   commit-user-email:
     description: The email address of the user who created the commit
     default: "41898282+github-actions[bot]@users.noreply.github.com"
@@ -44,8 +47,8 @@ runs:
         git config --local user.email "${{ inputs.commit-user-email }}"
         git config --local user.name "${{ inputs.commit-user-name }}"
         git checkout -b release/${{ inputs.tag-prefix }}$VERSION
-        sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
-        git add package.json
+        sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" ${{ inputs.version-file-path }}
+        git add ${{ inputs.version-file-path }}
         git commit -m "chore: bump version to v$VERSION"
         git push origin release/${{ inputs.tag-prefix }}$VERSION
       shell: bash
