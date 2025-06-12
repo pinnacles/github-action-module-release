@@ -16,6 +16,9 @@ inputs:
   tag-prefix:
     description: The tag prefix
     default: "v"
+  pre-release:
+    description: Whether the release is a pre-release
+    default: false
 
 runs:
   using: "composite"
@@ -28,7 +31,7 @@ runs:
         token: ${{ env.GITHUB_TOKEN }}
     - name: Conventional Changelog Action
       id: changelog
-      uses: TriPSs/conventional-changelog-action@v5
+      uses: TriPSs/conventional-changelog-action@v6
       with:
         preset: conventionalcommits
         skip-version-file: true
@@ -39,6 +42,7 @@ runs:
         skip-tag: true
         tag-prefix: ${{ inputs.tag-prefix }}
         github-token: ${{ env.GITHUB_TOKEN }}
+        pre-release: ${{ inputs.pre-release }}
     - name: Commit version up commit
       if: ${{ steps.changelog.outputs.skipped == 'false' }}
       env:
