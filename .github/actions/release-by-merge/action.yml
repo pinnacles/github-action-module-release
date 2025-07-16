@@ -1,5 +1,9 @@
 name: Release by merge
 description: Create a release when a PR is merged into the release branch
+inputs:
+  pre-release:
+    description: Whether the release is a pre-release
+    default: false
 runs:
   using: "composite"
   steps:
@@ -17,6 +21,7 @@ runs:
         output-file: false
         skip-commit: true
         github-token: ${{ env.GITHUB_TOKEN }}
+        pre-release: ${{ inputs.pre-release }}
 
     - name: Create Release
       uses: actions/create-release@v1
@@ -27,3 +32,4 @@ runs:
         tag_name: ${{ steps.changelog.outputs.tag }}
         release_name: ${{ steps.changelog.outputs.tag }}
         body: ${{ steps.changelog.outputs.clean_changelog }}
+        prerelease: ${{ inputs.pre-release }}
