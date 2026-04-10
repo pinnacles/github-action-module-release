@@ -19,6 +19,10 @@ inputs:
   pre-release:
     description: Whether the release is a pre-release
     default: false
+  source-branch:
+    required: false
+    description: Branch to scan for commits. Defaults to base-branch if not specified.
+    default: ""
 
 runs:
   using: "composite"
@@ -27,7 +31,7 @@ runs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 2
-        ref: ${{ inputs.base-branch }}
+        ref: ${{ inputs.source-branch || inputs.base-branch }}
         token: ${{ env.GITHUB_TOKEN }}
     - name: Conventional Changelog Action
       id: changelog
@@ -36,7 +40,7 @@ runs:
         preset: conventionalcommits
         skip-version-file: true
         output-file: false
-        git-branch: ${{ inputs.base-branch }}
+        git-branch: ${{ inputs.source-branch || inputs.base-branch }}
         git-push: false
         skip-commit: true
         skip-tag: true
