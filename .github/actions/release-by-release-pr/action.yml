@@ -4,6 +4,9 @@ inputs:
   base-branch:
     required: true
     description: The base branch
+  prerelease:
+    description: Whether the release is a pre-release
+    default: "false"
 runs:
   using: "composite"
   steps:
@@ -43,3 +46,4 @@ runs:
         tag_name: ${{ steps.parse_version.outputs.version }}
         release_name: ${{ steps.parse_version.outputs.version }}
         body: ${{ github.event.pull_request.body }}
+        prerelease: ${{ inputs.prerelease }}
