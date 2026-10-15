@@ -51,22 +51,41 @@ runs:
       if: ${{ steps.changelog.outputs.skipped == 'false' }}
       env:
         VERSION: ${{ steps.changelog.outputs.version }}
+        COMMIT_USER_EMAIL: ${{ inputs.commit-user-email }}
+        COMMIT_USER_NAME: ${{ inputs.commit-user-name }}
+        TAG_PREFIX: ${{ inputs.tag-prefix }}
+        VERSION_FILE_PATH: ${{ inputs.version-file-path }}
       run: |
-        git config --local user.email "${{ inputs.commit-user-email }}"
-        git config --local user.name "${{ inputs.commit-user-name }}"
-        git checkout -b release/${{ inputs.tag-prefix }}$VERSION
-        sed -i "s/VERSION = \".*\"/VERSION = \"$VERSION\"/" ${{ inputs.version-file-path }}
-        git add ${{ inputs.version-file-path }}
+        git config --local user.email "$COMMIT_USER_EMAIL"
+        git config --local user.name "$COMMIT_USER_NAME"
+        git checkout -b "release/$TAG_PREFIX$VERSION"
+        sed -i "s/VERSION = \".*\"/VERSION = \"$VERSION\"/" "$VERSION_FILE_PATH"
+        git add "$VERSION_FILE_PATH"
         git commit -m "chore: bump version to v$VERSION"
-        git push origin release/${{ inputs.tag-prefix }}$VERSION
+        git push origin "release/$TAG_PREFIX$VERSION"
       shell: bash
+    - name: Write changelog to file
+      if: ${{ steps.changelog.outputs.skipped == 'false' }}
+      # The changelog contains commit messages. With this shell the runner writes the run text to a file and cp copies
+      # it, so no shell reads the text and backticks or $(...) in a commit message are never run as commands.
+      # An env var cannot carry it: Linux rejects one env var larger than 128 KiB, and a changelog can be larger.
+      shell: cp {0} /tmp/pr_body.txt
+      run: |
+        ${{ steps.changelog.outputs.clean_changelog }}
     - name: Create Pull Request
       if: ${{ steps.changelog.outputs.skipped == 'false' }}
       env:
         GH_TOKEN: ${{ env.GITHUB_TOKEN }}
+        VERSION: ${{ steps.changelog.outputs.version }}
+        BASE_BRANCH: ${{ inputs.base-branch }}
+        TAG_PREFIX: ${{ inputs.tag-prefix }}
       run: |
-        cat <<EOF > /tmp/pr_body.txt
-        ${{ steps.changelog.outputs.clean_changelog }}
-        EOF
-        gh pr create --title "chore: Release version to v${{ steps.changelog.outputs.version }}" --body-file /tmp/pr_body.txt --base ${{ inputs.base-branch }} --head release/${{ inputs.tag-prefix }}${{ steps.changelog.outputs.version }}
+        export LC_ALL=C.UTF-8
+        MAX_BODY_CHARS=65000
+        # GitHub rejects a PR body longer than 65,536 characters. Cut a long body and leave room for the note.
+        if [ "$(wc -m < /tmp/pr_body.txt)" -gt "$MAX_BODY_CHARS" ]; then
+          BODY=$(cat /tmp/pr_body.txt)
+          printf '%s\n\n%s\n' "${BODY:0:MAX_BODY_CHARS}" "(The changelog was cut because it is longer than the GitHub PR body limit.)" > /tmp/pr_body.txt
+        fi
+        gh pr create --title "chore: Release version to v$VERSION" --body-file /tmp/pr_body.txt --base "$BASE_BRANCH" --head "release/$TAG_PREFIX$VERSION"
       shell: bash
