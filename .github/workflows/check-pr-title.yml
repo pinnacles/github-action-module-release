@@ -16,7 +16,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/validate-pr-title
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
